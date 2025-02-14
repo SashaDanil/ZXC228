@@ -21,7 +21,7 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 
 main_menu = InlineKeyboardMarkup()
 button_crypto = InlineKeyboardButton('🪙Криптовалюта🪙', callback_data='crypto')
-button_fiat = InlineKeyboardButton('💰Фиатная валюта💰', callback_data='fiat')
+button_fiat = InlineKeyboardButton('💰Валюта стран💰', callback_data='fiat')
 button_news = InlineKeyboardButton('📢Новости о криптовалюте📢', callback_data ='news')
 button_video = InlineKeyboardButton('🚀Трейдинг с нуля🚀', callback_data = 'video')
 button_platforms = InlineKeyboardButton('👍Лучшие платформы👍', callback_data='platforms')
@@ -58,7 +58,7 @@ fiat_menu.row(button_back_fiat)
 
 @dp.callback_query_handler(lambda query: query.data == 'video')
 async def send_local_video(callback_query: CallbackQuery):
-    file_path = r'C:\Users\Win11\bot\Самая_простая_стратегия_для_торговли_криптовалютой_новичкам_#shorts.mp4'
+    file_path = r'\\192.168.3.250\Veda\2 Курс\ИСП 24-9\Программирование\Зайков и Пронин\TeleBot\bot\Самая_простая_стратегия_для_торговли_криптовалютой_новичкам_#shorts.mp4'
     
     if not os.path.exists(file_path):
         await callback_query.message.reply("Файл не найден.")
