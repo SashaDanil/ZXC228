@@ -1,64 +1,73 @@
 import requests
 import aiohttp
-from aiogram import Bot, Dispatcher, types
-from aiogram.dispatcher import Dispatcher
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputFile
-from aiogram.contrib.middlewares.logging import LoggingMiddleware
-from aiogram.utils import executor
 import asyncio
-import aiohttp
-from bs4 import BeautifulSoup
+from aiogram import Bot, Dispatcher, types
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils import executor
+import os
 import logging
-import os.path
+from bs4 import BeautifulSoup
+
+logging.basicConfig(level=logging.INFO)
 
 API_TOKEN = '8032304693:AAH0e-7Oz3xfcOt2HNC95BRdIjDQ-j5xHSA'
 
 bot = Bot(token=API_TOKEN)
-dp = Dispatcher(bot)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 main_menu = InlineKeyboardMarkup()
 button_crypto = InlineKeyboardButton('🪙Криптовалюта🪙', callback_data='crypto')
 button_fiat = InlineKeyboardButton('💰Валюта стран💰', callback_data='fiat')
-button_news = InlineKeyboardButton('📢Новости о криптовалюте📢', callback_data ='news')
-button_video = InlineKeyboardButton('🚀Трейдинг с нуля🚀', callback_data = 'video')
+button_video = InlineKeyboardButton('🚀Трейдинг с нуля🚀', callback_data='video')
 button_platforms = InlineKeyboardButton('👍Лучшие платформы👍', callback_data='platforms')
 main_menu.row(button_crypto, button_fiat)
 main_menu.row(button_platforms)
 main_menu.row(button_video)
-main_menu.row(button_news)
+
+plat_menu = InlineKeyboardMarkup()
+button_bin = InlineKeyboardButton(text='Binance', url='https://www.binance.com/ru')
+button_byb = InlineKeyboardButton(text='Bybit', url='https://www.bybit.com/en-US/')
+button_coin = InlineKeyboardButton(text='Coinbase', url='https://www.coinbase.com/ru/exchange')
+button_okx = InlineKeyboardButton(text='OKX', url='https://www.okx.com/ru')
+button_back_plat = InlineKeyboardButton('❌ Назад ❌', callback_data='back_plat')
+plat_menu.row(button_bin)
+plat_menu.row(button_byb)
+plat_menu.row(button_coin)
+plat_menu.row(button_okx)
+plat_menu.row(button_back_plat)
 
 def crypto_menu():
     menu = InlineKeyboardMarkup()
-    button_btc = InlineKeyboardButton('📈 Биткоин', callback_data='btc')
-    button_eth = InlineKeyboardButton('🪙 Эфириум', callback_data='eth')
-    button_xrp = InlineKeyboardButton('💸 XRP', callback_data='xrp')
-    button_trump = InlineKeyboardButton('🙍‍♂️ BNB', callback_data='trump')
+    button_btc = InlineKeyboardButton('📈 Bitcoin', callback_data='btc')
+    button_eth = InlineKeyboardButton('🪙 Ethereum', callback_data='eth')
+    button_xrp = InlineKeyboardButton('💸 Toncoin', callback_data='xrp')
+    button_bnb = InlineKeyboardButton('🙍‍♂️ Dogecoin', callback_data='doge')  # Исправлено 'trump' на 'doge'
     button_back = InlineKeyboardButton('❌ Назад ❌', callback_data='back')
     menu.row(button_btc)
     menu.row(button_eth)
     menu.row(button_xrp)
-    menu.row(button_trump)
+    menu.row(button_bnb)
     menu.row(button_back)
     return menu
 
-fiat_menu = InlineKeyboardMarkup()
-button_dollar = InlineKeyboardButton('🇺🇲 Доллар', callback_data='dollar')
-button_euro = InlineKeyboardButton('🇪🇺 Евро', callback_data='euro')
-button_yuan = InlineKeyboardButton('🇨🇳 Юань', callback_data='yuan')
-button_yen = InlineKeyboardButton('🇰🇿 Тенге', callback_data='yen')
-button_back_fiat = InlineKeyboardButton('❌ Назад ❌', callback_data='back_fiat')
-fiat_menu.row(button_dollar)
-fiat_menu.row(button_euro)
-fiat_menu.row(button_yuan)
-fiat_menu.row(button_yen)
-fiat_menu.row(button_back_fiat)
+def fiat_menu():
+    fiat_menu_mm = InlineKeyboardMarkup()
+    button_dollar = InlineKeyboardButton('🇺🇲 Доллар', callback_data='dollar')
+    button_euro = InlineKeyboardButton('🇪🇺 Евро', callback_data='euro')
+    button_yuan = InlineKeyboardButton('🇯🇵 Йена', callback_data='yuan')
+    button_yen = InlineKeyboardButton('🇰🇿 Тенге', callback_data='yen')
+    button_back_fiat = InlineKeyboardButton('❌ Назад ❌', callback_data='back_fiat')
+    fiat_menu_mm.row(button_dollar)
+    fiat_menu_mm.row(button_euro)
+    fiat_menu_mm.row(button_yuan)
+    fiat_menu_mm.row(button_yen)
+    fiat_menu_mm.row(button_back_fiat)
+    return fiat_menu_mm  # Возвращаем созданное меню
 
 @dp.callback_query_handler(lambda query: query.data == 'video')
 async def send_local_video(callback_query: CallbackQuery):
-    file_path = r'\\192.168.3.250\Veda\2 Курс\ИСП 24-9\Программирование\Зайков и Пронин\TeleBot\bot\Самая_простая_стратегия_для_торговли_криптовалютой_новичкам_#shorts.mp4'
+    file_path = r'Трейдинг_с_нуля__самое_ПРОСТОЕ_объяснение_каждого_элемента.mp4'
     
     if not os.path.exists(file_path):
         await callback_query.message.reply("Файл не найден.")
@@ -69,52 +78,46 @@ async def send_local_video(callback_query: CallbackQuery):
             keyboard = InlineKeyboardMarkup().add(
                 InlineKeyboardButton(text="Закрыть", callback_data="close1")
             )
-            
-            await callback_query.message.answer_video(video, caption='Это видео кратко расскажет вам, как новичку начать зарабатывать на криптовалюте!!!', reply_markup=keyboard)
+            await callback_query.message.answer_video(video, caption='Это видео кратко расскажет вам, про трейдинг.', reply_markup=keyboard)
     except Exception as e:
         await callback_query.message.reply("Произошла ошибка при попытке отправить видео.")
-        print(f"Произошла ошибка при открытии файла: {file_path}. Ошибка: {e}")
+        logging.error(f"Ошибка при открытии файла: {file_path}. Ошибка: {e}")
 
 @dp.callback_query_handler(lambda query: query.data == 'close1')
 async def close_message(callback_query: CallbackQuery):
     await callback_query.message.delete()
 
-@dp.callback_query_handler(lambda query: query.data == 'close')
-async def close_message(callback_query: CallbackQuery):
-    await callback_query.message.delete()
-
 async def get_currency_rate(currency):
-    url = {
-        'btc': 'https://www.rbc.ru/crypto/currency/btcusd',
-        'eth': 'https://www.rbc.ru/crypto/currency/ethusd',
-        'xrp': 'https://www.rbc.ru/crypto/currency/xrpusd',
-        'trump': 'https://www.rbc.ru/crypto/currency/bnbusdt',
-        'dollar': 'https://www.rbc.ru/quote/ticker/72413',
-        'euro': 'https://www.rbc.ru/quote/ticker/338243',
-        'yuan': 'https://www.rbc.ru/quote/ticker/59066',
-        'yen': 'https://www.rbc.ru/quote/ticker/193076',
-        'news': 'https://www.rbc.ru/crypto/news/67aca4cd9a794706b1703236'
-    }.get(currency)
+    url_map = {
+        'btc': 'https://www.okx.com/ru/price/bitcoin-btc',  # Проверьте URL
+        'eth': 'https://www.okx.com/ru/price/ethereum-eth',  # Проверьте URL
+        'xrp': 'https://www.okx.com/ru/price/toncoin-ton',  # Проверьте URL
+        'doge': 'https://www.okx.com/ru/price/dogecoin-doge',  # Проверьте URL
+        'dollar': 'https://www.banki.ru/products/currency/usd/',
+        'euro': 'https://www.banki.ru/products/currency/eur/',
+        'yuan': 'https://www.banki.ru/products/currency/cash/jpy/moskva/',
+        'yen': 'https://www.banki.ru/products/currency/cash/kzt/moskva/'  # Проверьте URL
+    }
+
+    url = url_map.get(currency)
 
     if not url:
-        return 'Неизвестная валюта или категория.'
+        return f'Валюта "{currency}" неизвестна или отсутствует в списке.'
 
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 html = await response.text()
                 soup = BeautifulSoup(html, 'html.parser')
-
-                if currency in ['btc', 'eth', 'xrp', 'trump']:
-                    rate_element = soup.find('div', class_='chart__subtitle')
-                elif currency == 'news':
-                    news_elements = soup.find_all('div', class_='article__header__title')
-                    return '\n\n'.join([news.text.strip() for news in news_elements[:5]])
-                else:
-                    rate_element = soup.find('span', class_='chart__info__sum')
-
+                
+                # Использование правильных селекторов для каждого типа валюты
+                if currency in ['btc', 'eth', 'xrp', 'doge']:  # ByBit
+                    rate_element = soup.find('div', class_='index_price__VXAhl')  # Пример правильного класса
+                elif currency in ['dollar', 'euro', 'yuan', 'yen']:  # Banki.ru
+                    rate_element = soup.find('div', class_='Flexbox__sc-1yjv98p-0 feZtEw')  # Пример правильного класса
+                
                 if rate_element:
-                    rate = rate_element.text.strip()
+                    rate = rate_element.get_text(strip=True)
                 else:
                     rate = 'Информация недоступна.'
     except Exception as e:
@@ -123,40 +126,24 @@ async def get_currency_rate(currency):
 
     return rate
 
-@dp.callback_query_handler(lambda query: query.data == 'news')
-async def get_crypto_news(query: types.CallbackQuery):
-    try:
-        news = await get_currency_rate('news')
-        
-        close_button = InlineKeyboardButton(text="Закрыть", callback_data="close")
-        keyboard = InlineKeyboardMarkup().add(close_button)
-        
-        await query.message.answer(f"Последние новости о криптовалюте:\n\n{news}", reply_markup=keyboard)
-    except Exception as e:
-        logging.error(f"Error fetching news: {e}")
-        await query.message.answer("Извините, не удалось получить новости. Попробуйте позже.")
-    finally:
-        await query.answer()
+async def main():
+    tasks = [
+        get_currency_rate('btc'),
+        get_currency_rate('eth'),
+        get_currency_rate('xrp'),
+        get_currency_rate('doge'),
+        get_currency_rate('dollar'),
+        get_currency_rate('euro'),
+        get_currency_rate('yuan'),
+        get_currency_rate('yen')
+    ]
 
-@dp.callback_query_handler(lambda query: query.data == 'news')
-async def get_crypto_news(query: types.CallbackQuery):
-    try:
-        news = await get_currency_rate('news')
-        await query.message.answer(f"Последние новости о криптовалюте:\n\n{news}")
-    except Exception as e:
-        logging.error(f"Error fetching news: {e}")
-        await query.message.answer("Извините, не удалось получить новости. Попробуйте позже.")
-    finally:
-        await query.answer()
+    results = await asyncio.gather(*tasks)
+    for result in results:
+        print(result)
 
-        back_button = InlineKeyboardButton(text='Закрыть', callback_data='close')
-        back_keyboard = InlineKeyboardMarkup().add(back_button)
-        await bot.send_message(chat_id=query.message.chat.id, text=news, reply_markup=back_keyboard)
-        if query.data in ['back_crypto', 'back_fiat']:
-            await query.message.edit_caption(caption='💵 Привет, я бот для отслеживания крипты и валюты. 🪙 Выберите категорию:', reply_markup=main_menu)
-@dp.callback_query_handler(lambda query: query.data == 'close')
-async def close_news(query: types.CallbackQuery):
-    await query.message.delete()
+# Удалите вызов main(), если это бот, который должен обрабатывать команды от пользователей.
+# asyncio.run(main())  # Комментарий, так как это мешает работе бота
 
 @dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
@@ -167,19 +154,42 @@ async def start_command(message: types.Message):
         caption='💵 Привет, я бот для отслеживания крипты и валюты. 🪙 Выберите категорию:',
         reply_markup=main_menu
     )
-@dp.callback_query_handler(lambda query: query.data in ['btc', 'eth', 'xrp', 'trump', 'dollar', 'euro', 'yuan', 'yen', 'crypto', 'fiat', 'back', 'back_crypto', 'back_fiat', 'platforms'])
+
+@dp.callback_query_handler(lambda query: query.data in ['btc', 'eth', 'xrp', 'doge', 'dollar', 'euro', 'yuan', 'yen', 'crypto', 'fiat', 'back', 'back_fiat', 'platforms', 'back_plat'])
 async def inline_callback(query: types.CallbackQuery):
-    if query.data in ['btc', 'eth', 'xrp', 'trump', 'dollar', 'euro', 'yuan', 'yen']:
+    if query.data in ['btc', 'eth', 'xrp', 'doge', 'dollar', 'euro', 'yuan', 'yen']:
         try:
             rate = await get_currency_rate(query.data)
-            currency_names = {'btc': 'Bitcoin', 'eth': 'Ethereum', 'xrp': 'XRP', 'trump': 'BNB',
-                              'dollar': 'Доллар', 'euro': 'Евро', 'yuan': 'Юань', 'yen': 'Тенге'}
-            menu = crypto_menu() if query.data in ['btc', 'eth', 'xrp', 'trump'] else fiat_menu
-            await query.message.edit_caption(
-                caption=f"Текущий курс {currency_names[query.data]}: {rate}\nВыберите другую валюту или вернитесь назад:",
-                reply_markup=menu
-            )
+            currency_names = {
+                'btc': 'Bitcoin',
+                'eth': 'Ethereum',
+                'xrp': 'Toncoin',
+                'doge': 'Dogecoin',
+                'dollar': 'Доллар',
+                'euro': 'Евро',
+                'yuan': 'Йена',
+                'yen': 'Тенге'
+            }
+            # Определяем, какое меню показывать
+            menu = crypto_menu() if query.data in ['btc', 'eth', 'xrp', 'doge'] else fiat_menu()
+            # Формируем текст сообщения
+            if query.data in ['dollar', 'euro', 'yuan', 'yen']:  # Фиатные валюты
+                caption = (
+                    f"Текущий курс {currency_names[query.data]}: {rate}\n"
+                    "Этот курс в Москве, если вы хотите узнать курс в своём городе, переходите по ссылке: https://www.banki.ru/\n"
+                    "Выберите другую валюту или вернитесь назад:"
+                )
+            else:  # Криптовалюты
+                caption = (
+                    f"Текущий курс {currency_names[query.data]}: {rate}\n"
+                    "Выберите другую валюту или вернитесь назад:"
+                )
+            # Редактируем сообщение
+            await query.message.edit_caption(caption=caption, reply_markup=menu)
         except Exception as e:
+            logging.error(f"Ошибка: {e}")
+            # Определяем меню для ошибки
+            menu = crypto_menu() if query.data in ['btc', 'eth', 'xrp', 'doge'] else fiat_menu()
             await query.message.edit_caption(
                 caption="Произошла ошибка при получении курса. Пожалуйста, попробуйте позже.",
                 reply_markup=menu
@@ -187,27 +197,11 @@ async def inline_callback(query: types.CallbackQuery):
     elif query.data == 'crypto':
         await query.message.edit_caption(caption='Вы выбрали криптовалюту:', reply_markup=crypto_menu())
     elif query.data == 'fiat':
-        await query.message.edit_caption(caption='Вы выбрали валюты стран:', reply_markup=fiat_menu)
-    elif query.data == 'back':
-        await query.message.edit_caption(caption='💵 Привет, я бот для отслеживания крипты и валюты. 🪙 Выберите категорию:', reply_markup=main_menu)
+        await query.message.edit_caption(caption='Вы выбрали валюты стран:', reply_markup=fiat_menu())
     elif query.data == 'platforms':
-        platforms_message = (
-            "Вот список некоторых из лучших платформ для торговли криптовалютой:\n"
-            "-Binance - https://www.binance.com/ru \n"
-            "-Coinbase - https://www.coinbase.com/ \n"
-            "-Huobi Global - https://www.huobi.com/en-us/ \n"
-            "-KuCoin - https://www.kucoin.com/ \n"
-            "Каждая из них имеет свои особенности и преимущества. Выбирайте платформу, которая лучше всего соответствует вашим потребностям.\n\n"
-        )
-        back_button = InlineKeyboardButton(text='Закрыть', callback_data='close_platforms')
-        back_keyboard = InlineKeyboardMarkup().add(back_button)
-        await bot.send_message(chat_id=query.message.chat.id, text=platforms_message, reply_markup=back_keyboard)
-    elif query.data in ['back_crypto', 'back_fiat']:
+        await query.message.edit_caption(caption='Лучшие платформы для покупки и продажи крипты', reply_markup=plat_menu)
+    elif query.data in ['back', 'back_plat', 'back_fiat']:
         await query.message.edit_caption(caption='💵 Привет, я бот для отслеживания крипты и валюты. 🪙 Выберите категорию:', reply_markup=main_menu)
-
-@dp.callback_query_handler(lambda query: query.data == 'close_platforms')
-async def close_platforms(query: types.CallbackQuery):
-    await query.message.delete()
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
