@@ -42,7 +42,7 @@ def crypto_menu():
     button_btc = InlineKeyboardButton('📈 Bitcoin', callback_data='btc')
     button_eth = InlineKeyboardButton('🪙 Ethereum', callback_data='eth')
     button_xrp = InlineKeyboardButton('💸 Toncoin', callback_data='xrp')
-    button_bnb = InlineKeyboardButton('🙍‍♂️ Dogecoin', callback_data='doge')  # Исправлено 'trump' на 'doge'
+    button_bnb = InlineKeyboardButton('🙍‍♂️ Dogecoin', callback_data='doge')  
     button_back = InlineKeyboardButton('❌ Назад ❌', callback_data='back')
     menu.row(button_btc)
     menu.row(button_eth)
@@ -63,7 +63,7 @@ def fiat_menu():
     fiat_menu_mm.row(button_yuan)
     fiat_menu_mm.row(button_yen)
     fiat_menu_mm.row(button_back_fiat)
-    return fiat_menu_mm  # Возвращаем созданное меню
+    return fiat_menu_mm  
 
 @dp.callback_query_handler(lambda query: query.data == 'video')
 async def send_local_video(callback_query: CallbackQuery):
@@ -89,14 +89,14 @@ async def close_message(callback_query: CallbackQuery):
 
 async def get_currency_rate(currency):
     url_map = {
-        'btc': 'https://www.okx.com/ru/price/bitcoin-btc',  # Проверьте URL
-        'eth': 'https://www.okx.com/ru/price/ethereum-eth',  # Проверьте URL
-        'xrp': 'https://www.okx.com/ru/price/toncoin-ton',  # Проверьте URL
-        'doge': 'https://www.okx.com/ru/price/dogecoin-doge',  # Проверьте URL
+        'btc': 'https://www.okx.com/ru/price/bitcoin-btc',  
+        'eth': 'https://www.okx.com/ru/price/ethereum-eth',  
+        'xrp': 'https://www.okx.com/ru/price/toncoin-ton',  
+        'doge': 'https://www.okx.com/ru/price/dogecoin-doge',  
         'dollar': 'https://www.banki.ru/products/currency/usd/',
         'euro': 'https://www.banki.ru/products/currency/eur/',
         'yuan': 'https://www.banki.ru/products/currency/cash/jpy/moskva/',
-        'yen': 'https://www.banki.ru/products/currency/cash/kzt/moskva/'  # Проверьте URL
+        'yen': 'https://www.banki.ru/products/currency/cash/kzt/moskva/'  
     }
 
     url = url_map.get(currency)
@@ -110,11 +110,11 @@ async def get_currency_rate(currency):
                 html = await response.text()
                 soup = BeautifulSoup(html, 'html.parser')
                 
-                # Использование правильных селекторов для каждого типа валюты
-                if currency in ['btc', 'eth', 'xrp', 'doge']:  # ByBit
-                    rate_element = soup.find('div', class_='index_price__VXAhl')  # Пример правильного класса
-                elif currency in ['dollar', 'euro', 'yuan', 'yen']:  # Banki.ru
-                    rate_element = soup.find('div', class_='Flexbox__sc-1yjv98p-0 feZtEw')  # Пример правильного класса
+                
+                if currency in ['btc', 'eth', 'xrp', 'doge']:  
+                    rate_element = soup.find('div', class_='index_price__VXAhl')  
+                elif currency in ['dollar', 'euro', 'yuan', 'yen']:  
+                    rate_element = soup.find('div', class_='Flexbox__sc-1yjv98p-0 feZtEw')  
                 
                 if rate_element:
                     rate = rate_element.get_text(strip=True)
@@ -142,8 +142,6 @@ async def main():
     for result in results:
         print(result)
 
-# Удалите вызов main(), если это бот, который должен обрабатывать команды от пользователей.
-# asyncio.run(main())  # Комментарий, так как это мешает работе бота
 
 @dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
@@ -170,25 +168,25 @@ async def inline_callback(query: types.CallbackQuery):
                 'yuan': 'Йена',
                 'yen': 'Тенге'
             }
-            # Определяем, какое меню показывать
+            
             menu = crypto_menu() if query.data in ['btc', 'eth', 'xrp', 'doge'] else fiat_menu()
-            # Формируем текст сообщения
-            if query.data in ['dollar', 'euro', 'yuan', 'yen']:  # Фиатные валюты
+            
+            if query.data in ['dollar', 'euro', 'yuan', 'yen']:  
                 caption = (
                     f"Текущий курс {currency_names[query.data]}: {rate}\n"
                     "Этот курс в Москве, если вы хотите узнать курс в своём городе, переходите по ссылке: https://www.banki.ru/\n"
                     "Выберите другую валюту или вернитесь назад:"
                 )
-            else:  # Криптовалюты
+            else:  
                 caption = (
                     f"Текущий курс {currency_names[query.data]}: {rate}\n"
                     "Выберите другую валюту или вернитесь назад:"
                 )
-            # Редактируем сообщение
+            
             await query.message.edit_caption(caption=caption, reply_markup=menu)
         except Exception as e:
             logging.error(f"Ошибка: {e}")
-            # Определяем меню для ошибки
+            
             menu = crypto_menu() if query.data in ['btc', 'eth', 'xrp', 'doge'] else fiat_menu()
             await query.message.edit_caption(
                 caption="Произошла ошибка при получении курса. Пожалуйста, попробуйте позже.",
